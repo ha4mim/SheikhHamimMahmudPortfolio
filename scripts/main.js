@@ -117,24 +117,37 @@ function rotateDesignation() {
 // Initial setup
 designationContainer.prepend(createTextElement(designations[0]));
 setInterval(rotateDesignation, 3000);
-// Update your scroll event listener to this:
+// Scroll handler for squishing header
 let lastScrollY = 0;
 let ticking = false;
+const scrollThreshold = 50; // How many pixels to scroll before squishing
+const buffer = 10; // Buffer to prevent flickering
+
+function updateHeader() {
+    const header = document.querySelector('header');
+    if (lastScrollY >= scrollThreshold) {
+        header.classList.add('header-squished');
+    } else if (lastScrollY <= (scrollThreshold - buffer)) {
+        header.classList.remove('header-squished');
+    }
+    ticking = false;
+}
 
 window.addEventListener('scroll', function() {
     lastScrollY = window.scrollY;
     
     if (!ticking) {
-        window.requestAnimationFrame(function() {
-            const header = document.querySelector('header');
-            // Add buffer to prevent rapid toggling
-            if (lastScrollY >= 50) {
-                header.classList.add('header-scrolled');
-            } else if (lastScrollY <= 40) {  // 10px buffer
-                header.classList.remove('header-scrolled');
-            }
-            ticking = false;
-        });
+        window.requestAnimationFrame(updateHeader);
         ticking = true;
     }
+});
+
+// Initialize header state on load
+document.addEventListener('DOMContentLoaded', function() {
+    // Make sure header starts expanded
+    document.querySelector('header').classList.remove('header-squished');
+    
+    // Set initial scroll position
+    lastScrollY = window.scrollY;
+    updateHeader();
 });
